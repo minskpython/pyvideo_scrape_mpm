@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 import datetime
 import json
+import sys
+import os
 
 import youtube_dl
 import slugify
 
+import arg_interface
 
 DEFAULT_LANGUAGE = "rus"
-DEFAULT_SILENT_MODE = False
-DEFAULT_URLS_LIST_FILENAME = "urls.list"
+# DEFAULT_SILENT_MODE = False
+# DEFAULT_URLS_LIST_FILENAME = "urls.list"
 
 
 JSON_FORMAT_KWARGS = {
@@ -20,13 +23,13 @@ JSON_FORMAT_KWARGS = {
 
 
 def main():
-    list_filename = DEFAULT_URLS_LIST_FILENAME
+    list_filename, FOLDER_NAME = setup_interface()
     urls = filter(None, map(str.strip, open(list_filename).readlines()))
     videos_meta = filter(None, sum((get_entries(u) for u in urls), []))
     for meta in videos_meta:
         prepared_meta = get_prepared_meta(meta)
         filename = generate_filename(meta)
-        with open(filename, "w", encoding="utf8") as json_file:
+        with open(FOLDER_NAME + filename, "w", encoding="utf8") as json_file:
             json.dump(prepared_meta, json_file, **JSON_FORMAT_KWARGS)
 
 
@@ -115,6 +118,19 @@ def extract_thumbnail_url(data):
 
 def sanitize(title_substring):
     return title_substring.replace("\u200b", "").strip()
+
+
+def setup_interface():
+    namespace = arg_interface.create_interface()
+    URLS_LIST_FILENAME = namespace.file
+    SILENT_MODE = namespace.silent
+    FOLDER_NAME = namespace.directory
+    if not os.path.exists(FOLDER_NAME):
+        os.mkdir(FOLDER_NAME)
+    FOLDER_NAME += os.sep
+    if SILENT_MODE:
+        sys.stdout = open(os.devnull, "w")  # output => null
+    return URLS_LIST_FILENAME, FOLDER_NAME
 
 
 if __name__ == "__main__":
