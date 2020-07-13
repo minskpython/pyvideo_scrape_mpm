@@ -2,11 +2,11 @@
 import datetime
 import json
 import os
+import argparse
 
 import youtube_dl
 import slugify
 
-import arg_interface
 
 DEFAULT_LANGUAGE = "rus"
 
@@ -118,8 +118,32 @@ def sanitize(title_substring):
     return title_substring.replace("\u200b", "").strip()
 
 
+def create_interface():
+    parser = argparse.ArgumentParser()
+    parser._actions[0].help = 'Show parameters'
+
+    parser.add_argument(
+        '-f', '--file',
+        help='Use your own file with urls',
+        action='store',
+        default='urls.list',
+        metavar='file',
+    )
+
+    parser.add_argument(
+        '-d', '--directory',
+        help='directory name for JSON files',
+        action='store',
+        default='.',
+        metavar='dir',
+    )
+
+    args = parser.parse_args()
+    return args
+
+
 def setup_interface():
-    namespace = arg_interface.create_interface()
+    namespace = create_interface()
     FOLDER_NAME = namespace.directory
     if not os.path.exists(FOLDER_NAME):
         os.mkdir(FOLDER_NAME)
