@@ -14,12 +14,6 @@ def create_interface():
     )
 
     parser.add_argument(
-        '-s', '--silent',
-        help='silent mode',
-        action='store_true',
-    )
-
-    parser.add_argument(
         '-d', '--directory',
         help='directory name for JSON files',
         action='store',

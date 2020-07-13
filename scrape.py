@@ -10,10 +10,6 @@ import slugify
 import arg_interface
 
 DEFAULT_LANGUAGE = "rus"
-# DEFAULT_SILENT_MODE = False
-# DEFAULT_URLS_LIST_FILENAME = "urls.list"
-
-
 JSON_FORMAT_KWARGS = {
     "indent": 2,
     "separators": (",", ": "),
@@ -123,13 +119,10 @@ def sanitize(title_substring):
 def setup_interface():
     namespace = arg_interface.create_interface()
     URLS_LIST_FILENAME = namespace.file
-    SILENT_MODE = namespace.silent
     FOLDER_NAME = namespace.directory
     if not os.path.exists(FOLDER_NAME):
         os.mkdir(FOLDER_NAME)
     FOLDER_NAME += os.sep
-    if SILENT_MODE:
-        sys.stdout = open(os.devnull, "w")  # output => null
     return URLS_LIST_FILENAME, FOLDER_NAME
 
 
