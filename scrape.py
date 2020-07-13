@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import datetime
 import json
-import sys
 import os
 
 import youtube_dl
@@ -10,6 +9,7 @@ import slugify
 import arg_interface
 
 DEFAULT_LANGUAGE = "rus"
+
 JSON_FORMAT_KWARGS = {
     "indent": 2,
     "separators": (",", ": "),
@@ -19,7 +19,9 @@ JSON_FORMAT_KWARGS = {
 
 
 def main():
-    list_filename, FOLDER_NAME = setup_interface()
+    namespace = setup_interface()
+    list_filename = namespace.URLS_LIST_FILENAME
+    FOLDER_NAME = namespace.FOLDER_NAME
     urls = filter(None, map(str.strip, open(list_filename).readlines()))
     videos_meta = filter(None, sum((get_entries(u) for u in urls), []))
     for meta in videos_meta:
@@ -118,12 +120,11 @@ def sanitize(title_substring):
 
 def setup_interface():
     namespace = arg_interface.create_interface()
-    URLS_LIST_FILENAME = namespace.file
     FOLDER_NAME = namespace.directory
     if not os.path.exists(FOLDER_NAME):
         os.mkdir(FOLDER_NAME)
-    FOLDER_NAME += os.sep
-    return URLS_LIST_FILENAME, FOLDER_NAME
+    namespace.FOLDER_NAME = FOLDER_NAME + os.sep
+    return namespace
 
 
 if __name__ == "__main__":
