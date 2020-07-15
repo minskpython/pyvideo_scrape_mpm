@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 import datetime
 import json
+import os
+import argparse
 
 import youtube_dl
 import slugify
 
 
 DEFAULT_LANGUAGE = "rus"
-DEFAULT_SILENT_MODE = False
-DEFAULT_URLS_LIST_FILENAME = "urls.list"
-
 
 JSON_FORMAT_KWARGS = {
     "indent": 2,
@@ -20,13 +19,15 @@ JSON_FORMAT_KWARGS = {
 
 
 def main():
-    list_filename = DEFAULT_URLS_LIST_FILENAME
+    namespace = setup_interface()
+    list_filename = namespace.URLS_LIST_FILENAME
+    FOLDER_NAME = namespace.FOLDER_NAME
     urls = filter(None, map(str.strip, open(list_filename).readlines()))
     videos_meta = filter(None, sum((get_entries(u) for u in urls), []))
     for meta in videos_meta:
         prepared_meta = get_prepared_meta(meta)
         filename = generate_filename(meta)
-        with open(filename, "w", encoding="utf8") as json_file:
+        with open(FOLDER_NAME + filename, "w", encoding="utf8") as json_file:
             json.dump(prepared_meta, json_file, **JSON_FORMAT_KWARGS)
 
 
@@ -115,6 +116,39 @@ def extract_thumbnail_url(data):
 
 def sanitize(title_substring):
     return title_substring.replace("\u200b", "").strip()
+
+
+def create_interface():
+    parser = argparse.ArgumentParser()
+    parser._actions[0].help = 'Show parameters'
+
+    parser.add_argument(
+        '-f', '--file',
+        help='Use your own file with urls',
+        action='store',
+        default='urls.list',
+        metavar='file',
+    )
+
+    parser.add_argument(
+        '-d', '--directory',
+        help='directory name for JSON files',
+        action='store',
+        default='.',
+        metavar='dir',
+    )
+
+    args = parser.parse_args()
+    return args
+
+
+def setup_interface():
+    namespace = create_interface()
+    FOLDER_NAME = namespace.directory
+    if not os.path.exists(FOLDER_NAME):
+        os.mkdir(FOLDER_NAME)
+    namespace.FOLDER_NAME = FOLDER_NAME + os.sep
+    return namespace
 
 
 if __name__ == "__main__":
